@@ -4,7 +4,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <title>IRC Web Client</title>
+        <title>IRC Web Client - Help Page</title>
         <!--BOOTSTRAP CDN CALL - The Client downloads Bootstrap or uses cached version-->
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"></link>
@@ -26,9 +26,9 @@
                 </div>
                 <div class="collapse navbar-collapse" id="myNavbar">
                     <ul class="nav navbar-nav">
-                        <li class="active"><a href="./">Home</a></li>
+                        <li><a href="./">Home</a></li>
                         <li><a href="./channels">Channel List</a></li>
-                        <li><a href="./create">Create a Channel</a></li>
+                        <li class="active"><a href="./create">Create a Channel</a></li>
                         <li><a href="./help">Help</a></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -40,10 +40,18 @@
         </nav>
 
 
-        <!--HOMEPAGE-->
+        <!--CHANNEL CREATION FORM-->
         <div class="container" style="margin-top:50px">
-            <h1>IRC Web Client</h1>
-            <p>Welcome to the IRC Web Client. A wonderful message.</p>
+            <h2> Create a new channel </h2>
+                <form action="http://www.tate.org.uk/turner-prize" method="post" enctype="multipart/form-data">
+                    <p>
+                    Channel Name <input type="text" name="name" size="20" required="required"/> <br/>
+                    Password <input type="password" name="password" size="20" required="required"/> <br/>
+                    Description <input type="text" name="description" size="20" required="required"/> <br/>
+                    Founder <input type="text" name="founder" size="20"/> <br/>
+                    <input type="submit" />
+                    </p>
+                </form>
         </div>
     </body>
 </html>
