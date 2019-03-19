@@ -1,10 +1,10 @@
-//Node modules
+//Node Modules
 const express = require('express');
 const app = express();
 const fs = require('fs');
 
-//Custoom modules
-var dateMod = require('./customModules/dateModule')
+//Custom Modules
+const ircC = require("./customModules/IRCClient");
 
 //App Routing
 app.get('/', function (req, res) {
@@ -20,7 +20,12 @@ app.get('/channels', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
+    //FOR TEST PURPOSES - A socket should be created for each client
+    let IRCsock = ircC.connectIRC("irc.freenode.net", 6667);
+    ircC.sendCmd("LIST", IRCsock);
+    ircC.sendCmd("QUIT", IRCsock);
+    ircC.closeIRC(IRCsock);
 });
 
 app.get('/help', function (req, res) {
@@ -40,7 +45,7 @@ app.get('/create', function (req, res) {
 });
 
 app.get('/signup', function (req, res) {
-    fs.readFile('./pages/Create_account.html', function (err, data) {
+    fs.readFile('./pages/create_account.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
@@ -48,7 +53,7 @@ app.get('/signup', function (req, res) {
 });
 
 app.get('/login', function (req, res) {
-    fs.readFile('./pages/Login.html', function (err, data) {
+    fs.readFile('./pages/login.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
