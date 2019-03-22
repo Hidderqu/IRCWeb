@@ -6,13 +6,18 @@ const fs = require('fs');
 //Custom Modules
 const ircC = require("./customModules/IRCClient");
 
+let IRCsock;
+
 //App Routing
 app.get('/', function (req, res) {
     fs.readFile('./pages/index.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
+    IRCsock = ircC.connectIRC("irc.freenode.net", 6667);
+    ircC.sendCmd("NICK Roumata", IRCsock);
+    ircC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", IRCsock);
 });
 
 app.get('/channels', function (req, res) {
@@ -21,11 +26,8 @@ app.get('/channels', function (req, res) {
         res.write(data);
         res.end();
     });
-    //FOR TEST PURPOSES - A socket should be created for each client
-    let IRCsock = ircC.connectIRC("irc.freenode.net", 6667);
+    //GLOBAL SOCKET IS FOR TEST PURPOSES - A socket should be created for each user
     ircC.sendCmd("LIST", IRCsock);
-    ircC.sendCmd("QUIT", IRCsock);
-    ircC.closeIRC(IRCsock);
 });
 
 app.get('/help', function (req, res) {
@@ -33,7 +35,8 @@ app.get('/help', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
+    ircC.sendCmd("QUIT", IRCsock);
 });
 
 app.get('/create', function (req, res) {
@@ -49,7 +52,8 @@ app.get('/signup', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
+    ircC.closeIRC(IRCsock);
 });
 
 app.get('/login', function (req, res) {
@@ -57,6 +61,6 @@ app.get('/login', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
 });
 app.listen(4242, () => console.log('Started server on 4242'));
