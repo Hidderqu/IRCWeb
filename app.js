@@ -1,10 +1,12 @@
 //Node modules
 const express = require('express');
+const dateMod = require('./customModules/dateModule');
+dateMod.connect();
 const app = express();
 const fs = require('fs');
 
-//Custoom modules
-var dateMod = require('./customModules/dateModule')
+//Custom modules
+
 
 //App Routing
 app.get('/', function (req, res) {
@@ -54,4 +56,18 @@ app.get('/login', function (req, res) {
         res.end();
     })
 });
+
+
+app.get('/chat', function (req, res) {
+    fs.readFile('./pages/chat.xhtml', function (err, data) {
+        res.writeHead(200, {'Content-Type':'text/html'});
+        res.write(data);
+        res.end();
+    })
+});
 app.listen(4242, () => console.log('Started server on 4242'));
+
+
+
+
+
