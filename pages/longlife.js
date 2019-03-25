@@ -24,7 +24,7 @@ function longlife(op) {
     };
     try {
        // var url = "http://www2.macs.hw.ac.uk:8080/demo/longlife";
-        var url = "http://localhost:4242/chat";
+        var url = "http://localhost:4242/chatDir";
 
         url += "?stage=" + stage;
         if ( op == "put" ) {

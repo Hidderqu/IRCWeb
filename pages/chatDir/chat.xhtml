@@ -10,27 +10,37 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"></link>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="application/javascript"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js" type="application/javascript"></script>
-   <!-- <script src="sendMsg.js" type="application/javascript"></script> -->
-    <script type="application/javascript" src="../customModules/dateModule.js"></script>
+
     <script type="application/javascript">
 
+      /*  socket.send("CONNECT "+ $("#server").val());
+        socket.send("NICK "+ $("#nick").val() +"\n");
+        socket.send("USER "+ $("#nick").val() + ' ');
 
-        console.log("js called");
-        function sendMsg()
-        {
-            alert("Hi");
-            var msg = document.getElementById('message');
-            console.log(msg);
-           // socket.write(msg);
-            document.getElementById('chatbox').value += "\n" + msg;
-        }
+        socket.on('news', function (data) {
+            console.log(data);
+            socket.emit('my other event', { my: 'data' });
+        });
+        socket.on('login', (data) => {
+            connected = true;
+            // Display the welcome message
+            var message = "Welcome to Socket.IO Chat – ";
+            log(message, {
+                prepend: true
+            });
+        });
+
+        socket.on('new message', (data) => {
+            addChatMessage(data);
+        });*/
 
     </script>
+
 </head>
 
 
 <!--<body onload="longlife('get')"> -->
-<body>
+<body onload="connect()">
 <!--NAVIGATION BAR-->
 <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
@@ -40,11 +50,11 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="./">IRCWeb</a>
+            <a class="navbar-brand" href="..">IRCWeb</a>
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
             <ul class="nav navbar-nav">
-                <li><a href="./">Home</a></li>
+                <li><a href="..">Home</a></li>
                 <li class="active"><a href="./channels">Channel List</a></li>
                 <li><a href="./create">Create a Channel</a></li>
                 <li><a href="./help">Help</a></li>
@@ -68,11 +78,16 @@
    <!-- <form class="form-inline" method="post" action=""> -->
 
         <input  class="form-control"  id="message" size="100"/>
-        <button  class="btn btn-md btn-success" onclick="sendMsg()">Send</button>
-  <!--   </form> -->
+        <button  class="btn btn-md btn-success" onclick="post()">Send</button>
+    <script type="text/javascript" src="chat.js"></script>
+
+
+    <!--   </form> -->
 
 </div>
 
+
+<script type="application/javascript" src="../../node_modules/socket.io-client/dist/socket.io.js"></script>
 
 </body>
 
