@@ -21,36 +21,43 @@ server.on('error', (error) => {
 });
 
 //Custom Modules
-const ircC = require("./customModules/IRCClient");
-ircC.connectIRC("chat.freenode.net","6667");
+
+const irC = require("./customModules/IRCClient");
+const chList = require("./customModules/channel_list");
+
+//Constants
+let IRCSock = irC.connectIRC("irc.freenode.net", 6667); //A socket to connect to the IRC, there should be one for each session/user
+
 //App Routing
+
 app.get('/', function (req, res) {
     fs.readFile('./pages/index.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
+
+    //Registration sequence
+    irC.sendCmd("NICK Roumata42", IRCSock);
+    irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", IRCSock);
 });
 
-app.get('/channels', function (req, res) {
-    fs.readFile('./pages/channel_list.xhtml', function (err, data) {
-        res.writeHead(200, {'Content-Type':'text/html'});
-        res.write(data);
-        res.end();
-    });
-    //FOR TEST PURPOSES - A socket should be created for each client
-    let IRCsock = ircC.connectIRC("irc.freenode.net", 6667);
-    ircC.sendCmd("LIST", IRCsock);
-    ircC.sendCmd("QUIT", IRCsock);
-    ircC.closeIRC(IRCsock);
-});
+//Channel list requests handled in a separate script.
+chList.getList(app, IRCSock);
+chList.cachedList(app);
+
 
 app.get('/help', function (req, res) {
     fs.readFile('./pages/help.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
+
+    //Cleanup sequence is temporarily placed on the help page
+    //Should be on 'logout'
+    irC.sendCmd("QUIT", IRCSock);
+    irC.closeIRC(IRCSock);
 });
 
 app.get('/create', function (req, res) {
@@ -84,7 +91,7 @@ app.get('/signup', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
 });
 
 app.get('/login', function (req, res) {
@@ -92,7 +99,7 @@ app.get('/login', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-    })
+    });
 });
 
 
