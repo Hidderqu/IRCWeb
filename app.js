@@ -28,7 +28,6 @@ app.get('/', function (req, res) {
 chList.getList(app, IRCSock);
 chList.cachedList(app);
 
-
 app.get('/help', function (req, res) {
     fs.readFile('./pages/help.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
