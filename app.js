@@ -8,6 +8,7 @@ var io = require('socket.io').listen(server);
 var peers = [];
 
 
+
 //static path to our chat directory
 app.use(express.static(path.join(__dirname, 'pages/chatDir')));
 
@@ -23,12 +24,14 @@ server.on('error', (error) => {
 //Custom Modules
 
 const irC = require("./customModules/IRCClient");
+let IRCsock = irC.connectIRC("irc.freenode.net", 6667);
 const chList = require("./customModules/channel_list");
 
 //Constants
 let IRCSock = irC.connectIRC("irc.freenode.net", 6667); //A socket to connect to the IRC, there should be one for each session/user
 
 //App Routing
+
 
 app.get('/', function (req, res) {
     fs.readFile('./pages/index.xhtml', function (err, data) {
@@ -122,12 +125,16 @@ app.get('/node_modules/socket.io-client/dist/socket.io.js', function (req, res) 
 app.listen(4242, () => console.log('Started server on 4242'));
 
 io.on('connection', function (socket) {
-    let IRCsock = ircC.connectIRC("irc.freenode.net", 6667);
 
     peers.push(socket); // store the connection
     socket.emit('message', 'Welcome to Socket IO Chat');
-    ircC.sendCmd("NICK ALAATOUNSI \r\n",IRCsock);
-    ircC.sendCmd("USER ALAATOUNSI : ALAA TOUNSI \r\n",IRCsock);
+
+    socket.on('chat started',function () {
+        irC.sendCmd("NICK ALAATOUNSI91 \r\n",IRCsock);
+        irC.sendCmd("USER ALAATOUNSI 0: ALAA TOUNSI \r\n",IRCsock);
+        irC.sendCmd("JOIN leotesting 1234567800 \r\n",IRCsock);
+    });
+
 
     socket.on('message', function (data) {
         for (var i=0; i<peers.length; i++)
