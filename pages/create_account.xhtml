@@ -2,35 +2,24 @@
 <html>
   <head>
     <title>IRC Create Account</title>
+<style>
 
-<style >
- .center {
-  text-align: center;
-  padding-top: 15em;
-}
 </style>
   </head>
   <body>
-  	<div class="center">
-  	<h1>Create account</h1>
-  	<form action="">
-		Email :<br>
-		<input type="email" name="email">
-		<br>
-		Surname :<br>
-		<input type="text" name="userid">
-		<br>
-		Date of birth:<br>
-		<input type="date" name="birthday">
+  	<div>
+  	<H1>Create account</H1>
+  	<form action="account"  method="POST">
+		
+		<input type="text" placeholder="UserName" name="username" required/>
+		</br></br>
+		<input type="password" placeholder="Password" name="password" required/>
+		</br></br>
+		<input type="password" placeholder="ConfirmPassword" name="confirmpassword" required/>
+		<input type="email" placeholder="Email" name="email" required/>
+		</br></br>
 		</br>
-		Password:<br>
-		<input type="password" name="password">
-		<br>
-		Confirm Password:<br>
-		<input type="password" name="password">
-		<br>
-		<br>
-		<button onclick="location.href='Login.html'" type="button">Create your account</button>
+		<button type="submit">Create your account</button>
 	</form>
 	</div>
   </body>

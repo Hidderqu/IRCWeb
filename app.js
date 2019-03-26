@@ -6,8 +6,8 @@ const fs = require('fs');
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var peers = [];
-
-
+var bodyParser = require('body-parser');
+var session = require('express-session');
 //static path to our chat directory
 app.use(express.static(path.join(__dirname, 'pages/chatDir')));
 
@@ -21,31 +21,42 @@ server.on('error', (error) => {
 });
 
 //Custom Modules
-
 const irC = require("./customModules/IRCClient");
 const chList = require("./customModules/channel_list");
+const loginModule = require("./max/login.js");
+
 
 //Constants
-let IRCSock = irC.connectIRC("irc.freenode.net", 6667); //A socket to connect to the IRC, there should be one for each session/user
+//let IRCSock = irC.connectIRC("irc.freenode.net", 6667); //A socket to connect to the IRC, there should be one for each session/user
+   
+app.use(bodyParser.urlencoded({extended : true}));
+app.use(bodyParser.json());
+
+//session 
+app.use(session({
+        secret: 'secret',
+        resave: true,
+        saveUninitialized: true
+    }));
 
 //App Routing
 
 app.get('/', function (req, res) {
     fs.readFile('./pages/index.xhtml', function (err, data) {
+
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
+        
         res.end();
-    });
+        console.log(req.session);
 
-    //Registration sequence
-    irC.sendCmd("NICK Roumata42", IRCSock);
-    irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", IRCSock);
+    });
 });
 
 //Channel list requests handled in a separate script.
-chList.getList(app, IRCSock);
-chList.cachedList(app);
-
+//chList.getList(app, IRCSock);
+//chList.cachedList(app);
+loginModule.login(app);
 
 app.get('/help', function (req, res) {
     fs.readFile('./pages/help.xhtml', function (err, data) {
@@ -59,14 +70,14 @@ app.get('/help', function (req, res) {
     irC.sendCmd("QUIT", IRCSock);
     irC.closeIRC(IRCSock);
 });
-
+/*
 app.get('/create', function (req, res) {
     fs.readFile('./pages/create.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
     })
-});
+});*/
 
 
 app.get('/customModules/IRCClient.js', function (req, res) {
@@ -119,7 +130,7 @@ app.get('/node_modules/socket.io-client/dist/socket.io.js', function (req, res) 
         res.end();
     })
 });
-app.listen(4242, () => console.log('Started server on 4242'));
+
 
 io.on('connection', function (socket) {
     let IRCsock = ircC.connectIRC("irc.freenode.net", 6667);
@@ -143,7 +154,5 @@ io.on('connection', function (socket) {
 
 });
 
-
-
-
+app.listen(4242, () => console.log('Started server on 4242'));
 
