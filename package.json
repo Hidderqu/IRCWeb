@@ -2,7 +2,9 @@
   "name": "ircweb",
   "version": "1.0.0",
   "dependencies": {
+    "HTTPRequest": "^0.1.1",
     "express": "^4.16.4",
+    "io": "^1.0.0",
     "socket.io": "^2.2.0",
     "socket.io-client": "latest"
   },
