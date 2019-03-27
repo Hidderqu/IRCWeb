@@ -8,6 +8,7 @@ var started = false;
 
 function startChatting() {
     socket.emit('chat started');
+    console.log("chat started");
     started = true;
 
 }
@@ -19,7 +20,7 @@ function connect()
    // var connection = socket.connect("http://localhost:4343/chatDir/chat",{reconnect: true});
     socket = io('http://localhost:4343');
     socket = socket.connect("http://localhost:4343/chatDir/chat",{reconnect: true});
-    console.log(socket)
+    console.log(socket);
     if(!started)
     {
         startChatting();
@@ -27,10 +28,10 @@ function connect()
     }
     var chatlog = document.getElementById('chatbox');
         socket.on('message', function(msg) {
-        console.log("INSIDE ON");
+            console.log("INSIDE ON");
             var user = "ALAA";
             chatlog.innerHTML += "\n" +user +" > "+ msg;
-        chatlog.scrollTop = chatlog.scrollHeight;
+            chatlog.scrollTop = chatlog.scrollHeight;
     });
 }
 function post()

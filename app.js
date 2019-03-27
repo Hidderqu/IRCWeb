@@ -3,6 +3,7 @@ const express = require('express');
 const app = express()
 let path = require('path');
 const fs = require('fs');
+const net = require('net');
 let server = require('http').createServer(app);
 let io = require('socket.io').listen(server);
 let peers = [];
@@ -12,11 +13,9 @@ let nickname="ALAATOUNSI91";
 let channel = "leo2testing";
 let IRCSock ="";
 
-const loginModule = require()
 
-
-
-
+let bodyParser = require('body-parser');
+let session = require('express-session');
 //static path to our chat directory
 app.use(express.static(path.join(__dirname, 'pages/chatDir')));
 
@@ -32,26 +31,41 @@ server.on('error', (error) => {
 //Custom Modules
 const irC = require("./customModules/IRCClient");
 const chList = require("./customModules/channel_list");
+const loginModule = require("./max/login.js");
+
+
 //Constants
+
+app.use(bodyParser.urlencoded({extended : true}));
+app.use(bodyParser.json());
+
+//session 
+app.use(session({
+        secret: 'secret',
+        resave: true,
+        saveUninitialized: true
+    }));
+
 //App Routing
 
 
 app.get('/', function (req, res) {
     fs.readFile('./pages/index.xhtml', function (err, data) {
+
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
+        //console.log(req.session);
     });
-
-    //Registration sequence
-    irC.sendCmd("NICK Roumata42", IRCSock);
-    irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", IRCSock);
 });
 
-//Channel list requests handled in a separate script.
-//chList.getList(app, IRCSock);
-//chList.cachedList(app);
 
+//Login page setup
+loginModule.login(app);
+
+//Channel list page setup.
+chList.getList(app);
+chList.cachedList(app);
 
 app.get('/help', function (req, res) {
     fs.readFile('./pages/help.xhtml', function (err, data) {
@@ -60,21 +74,15 @@ app.get('/help', function (req, res) {
         res.end();
     });
 
-    //Cleanup sequence is temporarily placed on the help page
-    //Should be on 'logout'
-    irC.sendCmd("QUIT", IRCSock);
-    irC.closeIRC(IRCSock);
-});
-
-app.get('/create', function (req, res) {
-    fs.readFile('./pages/create.xhtml', function (err, data) {
-        res.writeHead(200, {'Content-Type':'text/html'});
-        res.write(data);
-        res.end();
-    })
+    //TODO: Cleanup sequence is temporarily placed on the help page, should be on 'logout' button
+    let IRCsock = loginModule.sockArray[req.session.username];
+    irC.sendCmd("QUIT", IRCsock);
+    irC.closeIRC(IRCsock);
+    delete loginModule.sockArray[req.session.username];
 });
 
 
+//TODO: Justify the need for a GET <script> or remove this.
 app.get('/customModules/IRCClient.js', function (req, res) {
     fs.readFile('./customModules/IRCClient.js', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/javascript'});
@@ -114,6 +122,7 @@ app.listen(4242, () => console.log('Started server on 4242'));
 let IRCserver = irC.getServer();
 
 
+
 io.on('connection', function (socket) {
     peers.push(socket); // store the connection
     for (var i=0; i<peers.length; i++)
@@ -144,7 +153,6 @@ io.on('connection', function (socket) {
 
     });
 
-    IRCSock.event.data
     if(irC.getConversation() !== null)
     {
         for (var i=0; i<peers.length; i++)
@@ -158,7 +166,5 @@ io.on('connection', function (socket) {
 
 });
 
-
-
-
+app.listen(4242, () => console.log('Started server on 4242'));
 
