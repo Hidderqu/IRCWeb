@@ -4,28 +4,32 @@
 //ircC.connectIRC("chatDir.freenode.net","6667");
 console.log("js called");
 var socket = null;
-var connected = false;
+var started = false;
 
 function startChatting() {
-    
+    socket.emit('chat started');
+    started = true;
+
 }
 
-
-
 function connect()
-{   console.log("connected");
+{
+    console.log("connected");
   //  socket = io('http://localhost:4343/node_modules/socket.io/lib/socket.js');
    // var connection = socket.connect("http://localhost:4343/chatDir/chat",{reconnect: true});
     socket = io('http://localhost:4343');
-
     socket = socket.connect("http://localhost:4343/chatDir/chat",{reconnect: true});
-    console.log(socket);
-    connected = true;
+    console.log(socket)
+    if(!started)
+    {
+        startChatting();
+
+    }
     var chatlog = document.getElementById('chatbox');
         socket.on('message', function(msg) {
         console.log("INSIDE ON");
-
-        chatlog.innerHTML += "\n" + msg;
+            var user = "ALAA";
+            chatlog.innerHTML += "\n" +user +" > "+ msg;
         chatlog.scrollTop = chatlog.scrollHeight;
     });
 }
@@ -33,9 +37,8 @@ function post()
 {
 
     // var user = document.getElementById('nickname').value;
-    var user = "ALAA";
     var message = document.getElementById('message').value;
     document.getElementById('message').value = "";
-    socket.emit('message', user + "> " + message);
+    socket.emit('message', message);
 }
 
