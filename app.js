@@ -1,13 +1,15 @@
 //Node Modules
 const express = require('express');
 const app = express()
-var path = require('path');
+const path = require('path');
 const fs = require('fs');
-var server = require('http').createServer(app);
-var io = require('socket.io').listen(server);
-var peers = [];
-var bodyParser = require('body-parser');
-var session = require('express-session');
+const net = require('net');
+
+let server = require('http').createServer(app);
+let io = require('socket.io').listen(server);
+let peers = [];
+let bodyParser = require('body-parser');
+let session = require('express-session');
 //static path to our chat directory
 app.use(express.static(path.join(__dirname, 'pages/chatDir')));
 
@@ -27,8 +29,7 @@ const loginModule = require("./max/login.js");
 
 
 //Constants
-//let IRCSock = irC.connectIRC("irc.freenode.net", 6667); //A socket to connect to the IRC, there should be one for each session/user
-   
+
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
 
@@ -46,18 +47,17 @@ app.get('/', function (req, res) {
 
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
-        
         res.end();
-        console.log(req.session);
-
+        //console.log(req.session);
     });
 });
 
-//Channel list requests handled in a separate script.
-
-//chList.getList(app, IRCSock);
-//chList.cachedList(app);
+//Login page setup
 loginModule.login(app);
+
+//Channel list page setup.
+chList.getList(app);
+chList.cachedList(app);
 
 app.get('/help', function (req, res) {
     fs.readFile('./pages/help.xhtml', function (err, data) {
@@ -66,21 +66,15 @@ app.get('/help', function (req, res) {
         res.end();
     });
 
-    //Cleanup sequence is temporarily placed on the help page
-    //Should be on 'logout'
-    irC.sendCmd("QUIT", IRCSock);
-    irC.closeIRC(IRCSock);
+    //TODO: Cleanup sequence is temporarily placed on the help page, should be on 'logout' button
+    let IRCsock = loginModule.sockArray[req.session.username];
+    irC.sendCmd("QUIT", IRCsock);
+    irC.closeIRC(IRCsock);
+    delete loginModule.sockArray[req.session.username];
 });
-/*
-app.get('/create', function (req, res) {
-    fs.readFile('./pages/create.xhtml', function (err, data) {
-        res.writeHead(200, {'Content-Type':'text/html'});
-        res.write(data);
-        res.end();
-    })
-});*/
 
 
+//TODO: Justify the need for a GET <script> or remove this.
 app.get('/customModules/IRCClient.js', function (req, res) {
     fs.readFile('./customModules/IRCClient.js', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/javascript'});
@@ -90,6 +84,7 @@ app.get('/customModules/IRCClient.js', function (req, res) {
 });
 
 /*
+//TODO: Justify the need for a GET <script> or remove this.
 app.get('//pages/chatDir/chatDir.js', function (req, res) {
     fs.readFile('./pages/chatDir/chatDir.js', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/javascript'});
@@ -124,6 +119,7 @@ app.get('/chat', function (req, res) {
 });
 
 
+//TODO: Justify the need for a GET <script> or remove this.
 app.get('/node_modules/socket.io-client/dist/socket.io.js', function (req, res) {
     fs.readFile('./node_modules/socket.io-client/dist/socket.io.js', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});

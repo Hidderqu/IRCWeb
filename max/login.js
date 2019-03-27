@@ -1,8 +1,11 @@
-var mysql = require('mysql');
-var express = require('express');
-var fs = require('fs');
-var irC = require("../customModules/IRCClient")
-var path = require('path');
+//var mysql = require('mysql');
+const fs = require('fs');
+const irC = require("../customModules/IRCClient");
+
+//Global array to store sockets allocated to clients
+let socketArray = {};
+exports.sockArray = socketArray;
+
 
 /*
 var connection = mysql.createConnection({
@@ -27,9 +30,10 @@ exports.login =(app) =>{
     })
 });
 	app.post('/auth', function(request, response) {
-		var username = request.body.username;
-		var password = request.body.password;
+		let username = request.body.username;
+		let password = request.body.password;
 		if (username && password) {
+			//TODO: Database Request
 			connection.query('SELECT * FROM user WHERE pseudo = ? AND password = ?', [username, password], function(error, results, fields) {
 				if (results.length > 0) {
 					request.session.loggedin = true;
@@ -48,26 +52,30 @@ exports.login =(app) =>{
 	});
 
 	app.post('/account', function(request, response) {
-		var username = request.body.username;
-		var password = request.body.password;
-		var confirmpassword = request.body.confirmpassword;
-		var email = request.body.email;
+		let username = request.body.username;
+		let password = request.body.password;
+		let confirmpassword = request.body.confirmpassword;
+		let email = request.body.email;
 		if (username && password && confirmpassword && email) {
-			if (password == confirmpassword){
+			if (password === confirmpassword){
 				//connection.query('INSERT INTO user (pseudo, password) VALUES (?, ?)', [username, password], function(error, results, fields) {		
 			 	request.session.loggedin = true;
 				request.session.username = username;
+
 				//Registration sequence
-    			request.session.socket = irC.connectIRC("irc.freenode.net", 6667);
-				irC.sendCmd("NICK " + request.session.username , request.session.socket);
-    			irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", request.session.socket);
+				socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
+				irC.sendCmd("NICK " + request.session.username , socketArray[username]);
+    			irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", socketArray[username]);
+
 				response.redirect('/');
 				}
+
 			else {
 				response.send('The two passwords are not the same');
 			}
 			response.end();
 			}
+
 		else {
 			response.send('Please enter all the detail to register');
 			console.log(username, password, confirmpassword, email);
@@ -75,6 +83,8 @@ exports.login =(app) =>{
 		response.end();
 	});
 
+
+	/*
 	app.get('/home', function(request, response) {
 		if (request.session.loggedin) {
 			response.send('Welcome back, ' + request.session.username + '!');
@@ -83,5 +93,6 @@ exports.login =(app) =>{
 		}
 		response.end();
 	});
-}
+	*/
+};
 

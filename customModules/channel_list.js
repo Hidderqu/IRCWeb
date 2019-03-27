@@ -4,17 +4,17 @@ const fs = require('fs');
 let IRClist = ''; //IRC Response
 let page = '';
 
-exports.getList = (app, IRCsock) => {
+exports.getList = (app) => {
     app.get('/channels', function (req, res) {
 
-        irC.sendCmd("LIST", IRCsock);
+        irC.sendCmd("LIST", req.session.socket);
 
         fs.readFile('./pages/channel_list_start.xhtml', function (err, data) {
             page = data.toString();
         });
 
-        //Reconfigure socket handling of data
-        IRCsock._events.data = (data) => {
+        //Reconfigure socket to handle list of channels
+        req.session.socket._events.data = (data) => {
             //console.log("LISTER >>> " + data);
             IRClist += data;
             //console.log ("LAST 14: " + page.substr(page.length - 14));
@@ -37,7 +37,7 @@ exports.getList = (app, IRCsock) => {
                         console.log("ERROR >>> " + e);
                     }
                     //Fill table
-                    page += '<tr><td>'+chaname+'</td><td>'+desc+'</td></tr>';
+                    page += '\n<tr><td>'+chaname+'</td><td>'+desc+'</td></tr>\n';
                     //console.log(chaname + ' ' +  desc);
                 }
 
@@ -62,8 +62,3 @@ exports.cachedList = (app) => {
         res.end();
     });
 };
-
-/* Table rows
-#minio 7 :http://minio.io - Object storage inspired by Amazon S3 and Facebook Haystack.
-<tr><td>#minio</td><td>http://minio.io - Object storage inspired by Amazon S3 and Facebook Haystack.</td></tr>
-*/

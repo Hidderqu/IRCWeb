@@ -24,18 +24,24 @@ exports.connectIRC = (host, port) => {
 };
 
 exports.closeIRC = (socket) => {
+    if(!socket){
+        console.log("Cannot close connection to IRC - No socket found");
+        return false;
+    };
     //Closes socket when done using
     socket.end();
-    console.log('Disconnected from IRC server');
+    console.log('Disconnected socket from IRC server');
+    return true;
 };
 
 exports.sendCmd = (cmd, socket) => {
     if(!socket){
-        console.log("Invalid Socket");
-        return;
+        console.log("Cannot send command to IRC - No socket found");
+        return false;
     };
     //Sends command <cmd> followed by CRLF
     socket.write(cmd + '\r\n', 'UTF8', () => {
-        console.log('Sent ' + cmd + ' to IRC');
+        console.log('Wrote <' + cmd + '> to IRC');
     });
+    return true;
 };
