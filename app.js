@@ -8,7 +8,6 @@ let server = require('http').createServer(app);
 let io = require('socket.io')(server);
 
 let peers = [];
-let channel = "leo2testing";
 
 
 let bodyParser = require('body-parser');
@@ -130,6 +129,7 @@ app.get('/customModules/IRCClient.js', function (req, res) {
 
 
 app.get('/chat', function (req, res) {
+    let channel = req.query['channelName'];
     console.log(req.session.username + " opened the page");
     let IRCSock = loginModule.sockArray[req.session.username];
     //SocketIO Server Reconfig
