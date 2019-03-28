@@ -1,15 +1,15 @@
+/*IRC Client for node.js server*/
+
 const net = require('net');
 let IRCserver = "";
 let serverSet = false;
-let nickname = "";
-let conv = "";
-exports.connectIRC = (host, port) => {
-    //Opens TCP connection to IRC server <host> on port <port>
+
+//Opens TCP connection to IRC server <host> on port <port>
+function connectIRC (host, port) {
     console.log("Connecting to IRC server " + host + ":" + port);
     let socket = net.connect(port, host.toString(), () => {
         socket.setEncoding('utf8'); //Converts received data to string
         console.log("Connection established to IRC server");
-    },{reconnect: true});
 
     //Triggers when data is received from the IRC server
     //Default print to console
@@ -22,40 +22,31 @@ exports.connectIRC = (host, port) => {
             console.log("the server is "+IRCserver);
             serverSet = true;
         }
-        if(data.includes("PING") === true)
-        {
-            console.log("PONG IS SENTBACK");
-            sendCmd("PONG "+nickname+" "+IRCserver,socket);
-        }
-        if(data.includes("#leo2testing") ===true)
-        {
-            conv = data;
-            console.log("RESPONSE " +conv);
-
-        }
-
     });
 
-    //Handles errors at the TCP-level
-    socket.on('error', (error) => {
-        console.log(error.toString());
+        //Handles errors at the TCP-level
+        socket.on('error', (error) => {
+            console.log(error.toString());
+        });
     });
-
     return socket;
-};
+}
 
-exports.closeIRC = (socket) => {
+
+//Closes the socket after sending an IRC QUIT
+function closeIRC (socket) {
     if(!socket){
         console.log("Cannot close connection to IRC - No socket found");
         return false;
-    };
+    }
     //Closes socket when done using
     socket.end();
     console.log('Disconnected socket from IRC server');
     return true;
-};
+}
 
-function sendCmd(cmd, socket) {
+//Sends command <cmd> followed by CRLF
+function sendCmd (cmd, socket) {
     if(!socket){
 
         console.log("Cannot send command to IRC - No socket found");
@@ -66,17 +57,35 @@ function sendCmd(cmd, socket) {
         console.log('Wrote <' + cmd + '> to IRC');
     });
     return true;
-
 }
-
-exports.sendCmd = sendCmd;
 
 exports.getServer = () => {
     return IRCserver;
 };
 
-exports.setNickname = (name) =>
-{
-    nickname = name ;
-};
+//Sets the PONG reply to the IRC PING with the right nick
+function setPONG (socket, nick) {
+    socket.on('data', (data) => {
+        if (data.includes('PING')){
+            let servName = data.slice(6).replace(/[\r\n]/g, '');
+            sendCmd('PONG '+nick+' '+servName, socket);
+        }
+    });
+}
+
+//Resets the data handler to console print
+function resetHandler (socket) {
+    socket._events.data = (data) => {
+        console.log('>>> ' + data);
+    };
+    console.log('Reset socket data handler to console log')
+}
+
+
+/* ----------- EXPORTS ----------- */
+exports.connectIRC = connectIRC;
+exports.closeIRC = closeIRC;
+exports.resetHandler = resetHandler;
+exports.sendCmd = sendCmd ;
+exports.setPONG = setPONG;
 
