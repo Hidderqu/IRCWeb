@@ -7,11 +7,7 @@ const net = require('net');
 let server = require('http').createServer(app);
 let io = require('socket.io').listen(server);
 let peers = [];
-let user = "ALAATOUNSI";
-let nickname="ALAATOUNSI91";
-//let channel = "linuxac";
 let channel = "leo2testing";
-let IRCSock ="";
 
 
 let bodyParser = require('body-parser');
@@ -32,7 +28,6 @@ server.on('error', (error) => {
 const irC = require("./customModules/IRCClient");
 const chList = require("./customModules/channel_list");
 const loginModule = require("./max/login.js");
-
 
 //Constants
 
@@ -109,62 +104,85 @@ app.get('/login', function (req, res) {
 
 
 app.get('/chat', function (req, res) {
+    let IRCSock = loginModule.sockArray[req.session.username];
+    //SocketIO Server Reconfig
+    io.on('connection', function (socket)
+    {
+        console.log("connection started");
+        if(IRCSock) {
+            peers.push(socket); // store the connection
+
+            socket.on('chat started', function () {
+               // socket.emit('joinChannel', channel,req.session.username);
+                socket.emit('systemNotification','Connecting to '+channel+'...');
+                irC.sendCmd("JOIN #" + channel, IRCSock)
+                if(irC.sendCmd("JOIN #" + channel, IRCSock))
+                {
+                    socket.emit('joinChannel', channel,req.session.username);
+
+                }
+            });
+
+            socket.on('message', function (data) {
+                console.log("socket on message is now called!!!");
+                irC.sendCmd("PRIVMSG #" + channel + " :" + data, IRCSock);
+                for (var i = 0; i < peers.length; i++)
+                    peers[i].emit('message', data); // send to each peer
+            });
+
+            socket.on('disconnect', function (reason) {
+                console.log(reason);
+                for (var i in peers)
+                    if (peers[i] === socket)
+                        peers.splice(i, 1); // remove this socket from peers
+            });
+
+
+            //IRC Socket Reconfig
+            IRCSock._events.data = (data) => {
+
+                if (data.includes(channel) === true)
+                {
+                    var response = data.toString().split(":");
+                    if(response[3] !=null)
+                    {
+                        if(response[3].includes(irC.getServer() === true))
+                        {
+                            let temp = response[3].split(" ");
+                            response[3] = temp[2] + " just joined the channel";
+
+                        }
+                        console.log(response);
+                        for (var i = 0; i < peers.length; i++)
+                        {
+                            peers[i].emit('conv', response[3]); // send to each peer
+                        }
+
+                    }
+
+                }
+            };
+
+        }
+        else
+        {
+            socket.emit('socketUndefined','You are not yet logged in');
+        }
+
+
+
+    });
     fs.readFile('./pages/chatDir/chat.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-        IRCSock = irC.connectIRC("irc.freenode.net", 6667); //A socket to connect to the IRC, there should be one for each session/user
 
-    })
+    });
 });
-
 app.listen(4242, () => console.log('Started server on 4242'));
 let IRCserver = irC.getServer();
 
 
-
-io.on('connection', function (socket) {
-    peers.push(socket); // store the connection
-    for (var i=0; i<peers.length; i++)
-        peers[i].emit('message', irC.getConversation()); // send to each peer
-
-    socket.on('chat started',function () {
-        socket.emit('message', 'Welcome to Socket IO Chat');
-        irC.sendCmd("NICK "+nickname,IRCSock);
-        irC.setNickname(nickname);
-        irC.sendCmd("USER "+user+" 0 *: ALAA TOUNSI",IRCSock);
-        irC.sendCmd("JOIN #"+channel,IRCSock);
-    });
-
-
-    socket.on('message', function (data) {
-        console.log("socket on message is now called!!!");
-        irC.sendCmd("PRIVMSG #"+channel+" :"+data,IRCSock);
-        for (var i=0; i<peers.length; i++)
-            peers[i].emit('message', data); // send to each peer
-
-    });
-
-    socket.on('disconnect', function(reason) {
-        console.log(reason);
-        for (var i in peers)
-            if ( peers[i] === socket )
-                peers.splice(i, 1); // remove this socket from peers
-
-    });
-
-    if(irC.getConversation() !== null)
-    {
-        for (var i=0; i<peers.length; i++)
-            peers[i].emit('message', irC.getConversation()); // send to each peer
-        console.log("get converation is not null");
-    }
-    else {
-        console.log("get converation is null");
-
-    }
-
+app.on('error', (error) => {
+    console.log(error.toString());
 });
-
-app.listen(4242, () => console.log('Started server on 4242'));
-

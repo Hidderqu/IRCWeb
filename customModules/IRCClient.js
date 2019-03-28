@@ -80,21 +80,3 @@ exports.setNickname = (name) =>
     nickname = name ;
 };
 
-exports.getConversation = () =>
-{
-    if(conv === "")
-    {
-        //return null if conv is already sent to the web server
-        return null;
-    }
-    else
-    {
-
-        // return the conversation once and then set the variable to empty string
-        var temp = conv;
-        conv = "";
-        console.log("GET CONV CALLED");
-        return temp;
-    }
-
-};

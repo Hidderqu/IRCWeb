@@ -13,33 +13,11 @@
 
     <script type="application/javascript">
 
-      /*  socket.send("CONNECT "+ $("#server").val());
-        socket.send("NICK "+ $("#nick").val() +"\n");
-        socket.send("USER "+ $("#nick").val() + ' ');
-
-        socket.on('news', function (data) {
-            console.log(data);
-            socket.emit('my other event', { my: 'data' });
-        });
-        socket.on('login', (data) => {
-            connected = true;
-            // Display the welcome message
-            var message = "Welcome to Socket.IO Chat – ";
-            log(message, {
-                prepend: true
-            });
-        });
-
-        socket.on('new message', (data) => {
-            addChatMessage(data);
-        });*/
-
     </script>
 
 </head>
 
 
-<!--<body onload="longlife('get')"> -->
 <body onload="connect()">
 <!--NAVIGATION BAR-->
 <nav class="navbar navbar-default navbar-fixed-top">
@@ -70,15 +48,15 @@
 
 <!--CHANNEL LIST/TABLE-->
 <div class="container" style="margin-top:50px">
-    <h2>Welcome to #ChannelName</h2>
+    <h2 id="welcomeMSG">Chat Room Getting Ready</h2>
     <textarea class="form-control" id="chatbox" name="chatbox" rows="25" cols="80">
                     IRCWeb &gt; Welcome to this channel. Enjoy chatting !
                 </textarea> <br/>
 
    <!-- <form class="form-inline" method="post" action=""> -->
 
-        <input  class="form-control"  id="message" size="100"/>
-        <button  class="btn btn-md btn-success" onclick="post()">Send</button>
+        <input  class="form-inline"  id="message" size="155"/>
+        <button  id="sendBtn" class="btn btn-md btn-success" onclick="post()">Send</button>
     <script type="text/javascript" src="chat.js"></script>
 
 
@@ -87,6 +65,10 @@
 </div>
 
 <script type="application/javascript" src="socket.io.js"></script>
+<div align="center">
+    <a href="https://validator.w3.org/check?uri=referer">XHTML VALIDATOR</a>
+
+</div>
 
 </body>
 
