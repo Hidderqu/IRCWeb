@@ -44,7 +44,7 @@ exports.login = (app) => {
 			socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
 			irC.sendCmd("NICK " + request.session.username, socketArray[username]);
 			irC.sendCmd("USER guest tolmoon tolsun :HW Students", socketArray[username]);
-			sleep(10000).then(() => {
+			sleep(3000).then(() => {
 			irC.sendCmd("NickServ identify "+ " " + request.session.password, socketArray[username]);
 			});
 
@@ -71,7 +71,7 @@ exports.login = (app) => {
 				socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
 				irC.sendCmd("NICK " + request.session.username , socketArray[username]);
 				irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", socketArray[username]);
-				sleep(10000).then(() => {
+				sleep(3000).then(() => {
 					 irC.sendCmd("NickServ register " + request.session.password + " " + request.session.email , socketArray[username]);
 				 });
 				response.redirect('/validate');
@@ -95,8 +95,8 @@ exports.login = (app) => {
 		if (validate !== 0) {
 			request.session.validate = validate;
 			var username = request.session.username;
-			socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
-			sleep(10000).then(() => {
+			//socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
+			sleep(3000).then(() => {
 				 irC.sendCmd("NickServ VERIFY REGISTER " + request.session.username + " " + request.session.validate , socketArray[username]);
 			 });
 			response.redirect('/');
