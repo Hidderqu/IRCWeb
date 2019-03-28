@@ -13,14 +13,6 @@ function sleep(millis) {
 exports.login = (app) => {
 
 	/* ---------- Route Setup ---------- */
-	/*app.get('/create_account', function (req, res) {
-    	fs.readFile('./pages/create_account.xhtml', function (err, data) {
-        	res.writeHead(200, {'Content-Type':'text/html'});
-        	res.write(data);
-        	res.end();
-    	})
-	});*/
-
 	app.get('/signup', function (req, res) {
 		fs.readFile('./pages/create_account.xhtml', function (err, data) {
 			res.writeHead(200, {'Content-Type':'text/html'});
@@ -52,10 +44,10 @@ exports.login = (app) => {
 			socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
 			irC.sendCmd("NICK " + request.session.username, socketArray[username]);
 			irC.sendCmd("USER guest tolmoon tolsun :HW Students", socketArray[username]);
-			/*sleep(10000).then(() => {
+			sleep(10000).then(() => {
 			irC.sendCmd("NickServ identify "+ " " + request.session.password, socketArray[username]);
 			});
-			*/
+
 			response.redirect('/');
 				} else {
 					response.send('Incorrect Username and/or Password!');
@@ -79,9 +71,9 @@ exports.login = (app) => {
 				socketArray[username] = irC.connectIRC("irc.freenode.net", 6667);
 				irC.sendCmd("NICK " + request.session.username , socketArray[username]);
 				irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", socketArray[username]);
-				/*sleep(10000).then(() => {
+				sleep(10000).then(() => {
 					 irC.sendCmd("NickServ register " + request.session.password + " " + request.session.email , socketArray[username]);
-				 });*/
+				 });
 				response.redirect('/validate');
 				}
 			else {
@@ -108,8 +100,7 @@ exports.login = (app) => {
 				 irC.sendCmd("NickServ VERIFY REGISTER " + request.session.username + " " + request.session.validate , socketArray[username]);
 			 });
 			response.redirect('/');
-			}
-
+		}
 	});
 };
 
