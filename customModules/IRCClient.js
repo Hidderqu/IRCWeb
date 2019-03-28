@@ -8,15 +8,16 @@ function connectIRC (host, port) {
     let socket = net.connect(port, host.toString(), () => {
         socket.setEncoding('utf8'); //Converts received data to string
         console.log("Connection established to IRC server");
+
+        socket.on("data", (data) => {
+            console.log('>>> ' + data);
+        });
+
+        //Handles errors at the TCP-level
+        socket.on('error', (error) => {
+            console.log(error.toString());
+        });
     });
-
-    resetHandler(socket);
-
-    //Handles errors at the TCP-level
-    socket.on('error', (error) => {
-        console.log(error.toString());
-    });
-
     return socket;
 };
 
@@ -51,7 +52,7 @@ function sendCmd (cmd, socket) {
 function setPONG (socket, nick) {
     socket.on('data', (data) => {
         if (data.includes('PING')){
-            let servName = data.slice(6);
+            let servName = data.slice(6).replace(/[\r\n]/g, '');
             sendCmd('PONG '+nick+' '+servName, socket);
         }
     });
@@ -63,6 +64,7 @@ function resetHandler (socket) {
     socket._events.data = (data) => {
         console.log('>>> ' + data);
     };
+    console.log('Reset socket data handler to console log')
 }
 
 

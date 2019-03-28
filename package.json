@@ -2,12 +2,12 @@
   "name": "ircweb",
   "version": "1.0.0",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "mysql": "^2.16.0",
     "socket.io": "^2.2.0",
-    "socket.io-client": "latest",
-    "body-parser": "latest"
+    "socket.io-client": "latest"
   },
   "description": "An IRC Web Client",
   "main": "app.js",

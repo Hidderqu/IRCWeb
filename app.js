@@ -4,7 +4,6 @@ const app = express()
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
-
 let server = require('http').createServer(app);
 let io = require('socket.io').listen(server);
 let peers = [];
@@ -26,9 +25,11 @@ server.on('error', (error) => {
 const irC = require("./customModules/IRCClient");
 const chList = require("./customModules/channel_list");
 const loginModule = require("./max/login.js");
+const NewCHModule = require("./customModules/NewCH"); 
 
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
+NewCHModule.NewCH(app);
 
 //Session
 app.use(session({
@@ -58,33 +59,16 @@ loginModule.login(app);
 chList.getList(app);
 chList.cachedList(app);
 
+app.get('/create', function (req, res) {
+    fs.readFile('./pages/create.xhtml', function (err, data) {
+        res.writeHead(200, {'Content-Type':'text/html'});
+        res.write(data);
+        res.end();
+    })
+});
 
 app.get('/help', function (req, res) {
     fs.readFile('./pages/help.xhtml', function (err, data) {
-        res.writeHead(200, {'Content-Type':'text/html'});
-        res.write(data);
-        res.end();
-    });
-
-    //TODO: Cleanup sequence is temporarily placed on the help page, should be on 'logout' button
-    let IRCsock = loginModule.sockArray[req.session.username];
-    irC.sendCmd("QUIT", IRCsock);
-    irC.closeIRC(IRCsock);
-    delete loginModule.sockArray[req.session.username];
-});
-
-
-app.get('/signup', function (req, res) {
-    fs.readFile('./pages/create_account.xhtml', function (err, data) {
-        res.writeHead(200, {'Content-Type':'text/html'});
-        res.write(data);
-        res.end();
-    });
-});
-
-
-app.get('/login', function (req, res) {
-    fs.readFile('./pages/login.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
@@ -101,6 +85,35 @@ app.get('/chat', function (req, res) {
 });
 
 
+app.get('/validate', function (req, res) {
+    fs.readFile('./pages/validate.xhtml', function (err, data) {
+        res.writeHead(200, {'Content-Type':'text/html'});
+        res.write(data);
+        res.end();
+    });
+});
+
+app.get('/logout', function (req, res) {
+    let IRCsock = loginModule.sockArray[req.session.username];
+
+    if (IRCsock){
+        irC.sendCmd("QUIT", IRCsock);
+        irC.closeIRC(IRCsock);
+        delete loginModule.sockArray[req.session.username];
+
+        res.send('You are now logged out. Thank you ' + req.session.username +'.');
+        res.end();
+    }
+
+    else {
+        //TODO: Redirect to login page
+        res.send('You are not logged in.');
+        res.end();
+    }
+
+
+
+});
 
 
 //SCRIPTS
@@ -113,15 +126,15 @@ app.get('/customModules/IRCClient.js', function (req, res) {
     })
 });
 
-/*
+
 //TODO: Justify the need for a GET <script> or remove this.
-app.get('//pages/chatDir/chatDir.js', function (req, res) {
+app.get('/pages/chatDir/chatDir.js', function (req, res) {
     fs.readFile('./pages/chatDir/chatDir.js', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/javascript'});
         res.write(data);
         res.end();
     })
-});*/
+});
 
 
 //TODO: Justify the need for a GET <script> or remove this.
@@ -171,5 +184,5 @@ io.on('connection', function (socket) {
 
 
 /* ------- Start Web-server ------- */
-app.listen(4242, () => console.log('Started server on 4242'));
+app.listen(8080, () => console.log('Started server on 4242'));
 
