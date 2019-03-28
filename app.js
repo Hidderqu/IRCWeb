@@ -1,11 +1,13 @@
 //Node Modules
 const express = require('express');
-const app = express()
+const app = express();
 let path = require('path');
 const fs = require('fs');
 const net = require('net');
+
 let server = require('http').createServer(app);
-let io = require('socket.io').listen(server);
+let io = require('socket.io')(server);
+
 let peers = [];
 let channel = "leo2testing";
 
@@ -54,6 +56,15 @@ app.get('/', function (req, res) {
     });
 });
 
+app.get('/node_modules/socket.io-client/dist/socket.io.js', function (req, res) {
+    fs.readFile('./node_modules/socket.io-client/dist/socket.io.js', function (err, data) {
+
+        res.writeHead(200, {'Content-Type':'text/html'});
+        res.write(data);
+        res.end();
+        //console.log(req.session);
+    });
+});
 
 //Login page setup
 loginModule.login(app);
@@ -94,6 +105,8 @@ app.get('/signup', function (req, res) {
     });
 });
 
+
+
 app.get('/login', function (req, res) {
     fs.readFile('./pages/login.xhtml', function (err, data) {
         res.writeHead(200, {'Content-Type':'text/html'});
@@ -104,30 +117,30 @@ app.get('/login', function (req, res) {
 
 
 app.get('/chat', function (req, res) {
+    console.log(req.session.username + " opened the page");
     let IRCSock = loginModule.sockArray[req.session.username];
     //SocketIO Server Reconfig
     io.on('connection', function (socket)
     {
-        console.log("connection started");
         if(IRCSock) {
-            peers.push(socket); // store the connection
 
+           // console.log("Total number of peers "+peers.length);
+            console.log("user connected is "+req.session.username);
             socket.on('chat started', function () {
                // socket.emit('joinChannel', channel,req.session.username);
                 socket.emit('systemNotification','Connecting to '+channel+'...');
-                irC.sendCmd("JOIN #" + channel, IRCSock)
-                if(irC.sendCmd("JOIN #" + channel, IRCSock))
-                {
-                    socket.emit('joinChannel', channel,req.session.username);
+                irC.sendCmd("JOIN #" + channel, IRCSock);
+                socket.emit('joinChannel', channel,req.session.username);
 
-                }
+
             });
 
-            socket.on('message', function (data) {
+            socket.on('message', function (data,sender) {
                 console.log("socket on message is now called!!!");
                 irC.sendCmd("PRIVMSG #" + channel + " :" + data, IRCSock);
-                for (var i = 0; i < peers.length; i++)
-                    peers[i].emit('message', data); // send to each peer
+                socket.emit('message',data,req.session.username); // send to each peer
+
+
             });
 
             socket.on('disconnect', function (reason) {
@@ -144,19 +157,36 @@ app.get('/chat', function (req, res) {
                 if (data.includes(channel) === true)
                 {
                     var response = data.toString().split(":");
+                    console.log("response 3 is "+response[3]);
+                    console.log("whole response is "+data.toString());
+
                     if(response[3] !=null)
                     {
-                        if(response[3].includes(irC.getServer() === true))
+                        if(data.includes(irC.getServer()) && data.includes('353') )
                         {
-                            let temp = response[3].split(" ");
-                            response[3] = temp[2] + " just joined the channel";
+                           // let users = response[3].slice(response[3].lastIndexOf('6')+1,response[3].indexOf("#"));
+                            users = response[2].substr(response[2].lastIndexOf('6'),response[3].indexOf("#"));
+                            console.log(users);
+                            //for (var i = 0; i < peers.length; i++)
+                           // {
+                                socket.emit('usersList',users);
+                           // }
 
                         }
-                        console.log(response);
-                        for (var i = 0; i < peers.length; i++)
+                       /* for (var i = 0; i < peers.length; i++)
                         {
                             peers[i].emit('conv', response[3]); // send to each peer
-                        }
+                        }*/
+
+                    }
+                    if(data.toString().includes('PRIVMSG'))
+                    {
+                        let conv = response[2].split(' ');
+
+                       // for (var i = 0; i < peers.length; i++)
+                       // {
+                            socket.emit('conv', response[1].substr(0,response[1].indexOf('!')), response[2].substr(0,response[2].length)); // send to each peer
+                       // }
 
                     }
 
