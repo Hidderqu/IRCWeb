@@ -52,7 +52,6 @@ app.get('/', function (req, res) {
         res.writeHead(200, {'Content-Type':'text/html'});
         res.write(data);
         res.end();
-        //console.log(req.session);
     });
 });
 
@@ -233,7 +232,7 @@ app.get('/CSS/sticky-footer', function (req, res) {
 });
 
 /* ------- Start Web-server ------- */
-app.listen(8080, () => console.log('Started server on 4242'));
+app.listen(8080, () => console.log('Started server on 8080'));
 
 app.on('error', (error) => {
     console.log(error.toString());
