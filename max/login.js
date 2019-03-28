@@ -3,32 +3,22 @@ const fs = require('fs');
 const irC = require("../customModules/IRCClient");
 
 //Global array to store sockets allocated to clients
+//Should ultimately be moved to IRCClient.js
 let socketArray = {};
 exports.sockArray = socketArray;
 
 
-/*
-var connection = mysql.createConnection({
-	host     : 'localhost',
-	user     : 'root',
-	password : '',
-	database : 'chat'
-});
-*/
-
 exports.login =(app) =>{
 
-/*	app.get('/', function(request, response) {
-		response.sendFile(path.join(__dirname + '../pages/chatDir/login.html'));
-	});*/
-
 	app.get('/create', function (req, res) {
-    fs.readFile('./pages/create_account.xhtml', function (err, data) {
-        res.writeHead(200, {'Content-Type':'text/html'});
-        res.write(data);
-        res.end();
-    })
-});
+		fs.readFile('./pages/create_account.xhtml', function (err, data) {
+			res.writeHead(200, {'Content-Type':'text/html'});
+			res.write(data);
+			res.end();
+		})
+	});
+
+
 	app.post('/auth', function(request, response) {
 		let username = request.body.username;
 		let password = request.body.password;
@@ -51,6 +41,7 @@ exports.login =(app) =>{
 		}
 	});
 
+
 	app.post('/account', function(request, response) {
 		let username = request.body.username;
 		let password = request.body.password;
@@ -67,6 +58,10 @@ exports.login =(app) =>{
 				irC.sendCmd("NICK " + request.session.username , socketArray[username]);
     			irC.sendCmd("USER guest tolmoon tolsun :Ronnie Reagan", socketArray[username]);
 
+    			//Add ping management to the socket by specifying username
+				irC.setPONG(socketArray[username], username);
+
+				//Redirect to homepage
 				response.redirect('/');
 				}
 
@@ -82,17 +77,5 @@ exports.login =(app) =>{
 		}
 		response.end();
 	});
-
-
-	/*
-	app.get('/home', function(request, response) {
-		if (request.session.loggedin) {
-			response.send('Welcome back, ' + request.session.username + '!');
-		} else {
-			response.send('Please login to view this page!');
-		}
-		response.end();
-	});
-	*/
 };
 
