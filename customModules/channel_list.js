@@ -1,60 +1,83 @@
 const irC = require("./IRCClient");
 const fs = require('fs');
+const loginModule = require('../max/login');
 
-let IRClist = ''; //IRC Response
-let page = '';
+let page = ''; //HTML Response, cached until refresh
 
-exports.getList = (app, IRCsock) => {
+exports.getList = (app) => {
     app.get('/channels', function (req, res) {
 
-        irC.sendCmd("LIST", IRCsock);
+        //Get user's dedicated IRC socket
+        let userSock = loginModule.sockArray[req.session.username];
 
-        fs.readFile('./pages/channel_list_start.xhtml', function (err, data) {
-            page = data.toString();
-        });
+        if (userSock) {
+            //Ask list to the IRC
+            irC.sendCmd("LIST", userSock);
 
-        //Reconfigure socket handling of data
-        IRCsock._events.data = (data) => {
-            //console.log("LISTER >>> " + data);
-            IRClist += data;
-            //console.log ("LAST 14: " + page.substr(page.length - 14));
-            //console.log (page.substr(page.length - 14) === "End of /LIST\r\n");
-            if (IRClist.substr(IRClist.length - 14) === "End of /LIST\r\n"){
-                //console.log("Reached end of list");
+            //Clean list and HTML buffer
+            let IRClist = '';
+            page = '';
 
-                //Start parsing
-                let entries = IRClist.split('\r\n');
-                console.log(entries);
+            //Write beginning of HTML page to buffer
+            fs.readFile('./pages/channel_list_start.xhtml', function (err, data) {
+                page = data.toString();
+            });
 
-                for (let i = 1; i < entries.length -2; i++){
-                    let elts = entries[i].split(' ');
-                    let chaname = elts[3];
-                    let desc = '';
-                    try {
-                        desc = elts.slice(5).join(' ').substring(1);
+            //Reconfigure user socket to handle list parsing
+            console.log("Setting up socket for list parsing");
+            userSock._events.data = (data) => {
+                //Build IRC list from received data
+                IRClist += data;
+
+                //Check if end of list has been reached
+                if (IRClist.substr(IRClist.length - 14) === "End of /LIST\r\n"){
+
+                    //Start parsing
+                    let entries = IRClist.split('\r\n');
+                    for (let i = 1; i < entries.length -2; i++){
+                        let elts = entries[i].split(' ');
+                        let chaname = elts[3];
+                        let nbUsers = elts[4];
+                        let desc = '';
+                        try {
+                            //Parse description to make sure nothing funny happens with html tag injection
+                            desc = elts.slice(5).join(' ').substring(1).replace(/[<>]/g, '');
+                        }
+                        catch (e) {
+                            console.log("ERROR >>> " + e);
+                        }
+
+                        //Fill HTML table if valid channel name
+                        if (chaname[0] === '#'){
+                            page += '\n<tr><td>'+chaname+'</td><td>'+nbUsers+'</td><td>'+desc+'</td></tr>\n';
+                        }
                     }
-                    catch (e) {
-                        console.log("ERROR >>> " + e);
-                    }
-                    //Fill table
-                    page += '<tr><td>'+chaname+'</td><td>'+desc+'</td></tr>';
-                    //console.log(chaname + ' ' +  desc);
+
+                    //Write end of HTML page
+                    fs.readFile('./pages/channel_list_end.xhtml', function (err, data) {
+                        page += data;
+                    });
+
+                    //Send to browser
+                    res.writeHead(200, {'Content-Type':'text/html'});
+                    res.write(page);
+                    res.end();
+
+                    // Reset user socket handler to default
+                    // (i.e received data printed out in the console)
+                    console.log("Resetting Socket");
+                    irC.resetHandler(userSock);
+                    irC.setPONG(userSock, req.session.username);
                 }
+            };
+        }
 
-                //Write end of xhtml
-                fs.readFile('./pages/channel_list_end.xhtml', function (err, data) {
-                    page += data;
-                });
+        else res.redirect('/login');
 
-                res.writeHead(200, {'Content-Type':'text/html'});
-                res.write(page);
-                res.end();
-            }
-        };
     });
 };
 
-//Temporary solution to send cached list as fetching takes time.
+//Temporary solution to send cached list as live-fetching takes time.
 exports.cachedList = (app) => {
     app.get('/channels_cached', (req, res) => {
         res.writeHead(200, {'Content-Type':'text/html'});
@@ -62,8 +85,3 @@ exports.cachedList = (app) => {
         res.end();
     });
 };
-
-/* Table rows
-#minio 7 :http://minio.io - Object storage inspired by Amazon S3 and Facebook Haystack.
-<tr><td>#minio</td><td>http://minio.io - Object storage inspired by Amazon S3 and Facebook Haystack.</td></tr>
-*/

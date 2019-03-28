@@ -4,16 +4,13 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <title>IRC Web Client - Channel Creation</title>
+        <title>IRC Web Client - Help Page</title>
         <!--BOOTSTRAP CDN CALL - The Client downloads Bootstrap or uses cached version-->
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"></link>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="application/javascript"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js" type="application/javascript"></script>
     </head>
-
-
-
 
     <body>
         <!--NAVIGATION BAR-->
@@ -45,33 +42,16 @@
 
         <!--CHANNEL CREATION FORM-->
         <div class="container" style="margin-top:50px">
-			<h2> Create a new channel </h2>
-            <h3>The created channle can keep the setting even if everyone leaves</h3>
-                <p>
-                    <form action="newCH" method="POST">
-                        Channel Name <input type="text" name="CHname" size="20" required="required"/> <br/>
-                        Password <input type="password" name="PW" size="20" required="required"/> <br/>
-                        Description <input type="text" name="DS" size="20" required="required"/> <br/>
-                        <button type="submit">submit</button>
-                    </form>
-                </p><br/><br/><br/><br/><br/>
-
-
-
-            <h2>Channel Modes</h2>
-            <h3>For existing channel, please enter password to join if needed</h3>
-                <p>
-                    <form action="mode" method="POST">
-                        Channel Name <input type="text" name="MCHname" size="20" required="required"/> <br/>
-                        Channel password <input type="password" name="CHPW" size="20"/> <br/><br/>
-                        Topic <input type="text" name="TP" size="20"/> <br/>
-                        New Founder <input type="text" name="FD" size="20"/> <br/>
-                        New Operator <input type="text" name="OP" size="20"/> <br/>
-                        <input type="checkbox" name="key" value="yes">Key to Join <input type="password" name="keyPW" size="20"/><br>
-                        <button type="submit" >submit</button>
-                    </form>
-                </p><br/>
-
+            <h2> Create a new channel </h2>
+                <form action="http://www.tate.org.uk/turner-prize" method="post" enctype="multipart/form-data">
+                    <p>
+                    Channel Name <input type="text" name="name" size="20" required="required"/> <br/>
+                    Password <input type="password" name="password" size="20" required="required"/> <br/>
+                    Description <input type="text" name="description" size="20" required="required"/> <br/>
+                    Founder <input type="text" name="founder" size="20"/> <br/>
+                    <input type="submit" />
+                    </p>
+                </form>
         </div>
     </body>
 </html>
