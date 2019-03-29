@@ -35,7 +35,10 @@ exports.NewCH = (app) => {
         //var FD = request.body.FD;
         irC.sendCmd("join #"+CHname, IRCsock);
         irC.sendCmd("chanserv REGISTER #"+CHname+" "+PW+" "+DS, IRCsock);
-        irC.sendCmd("chanserv set #"+CHname+" guard on", IRCsock) //this can keep the channel setting if no one in the channel
+        irC.sendCmd("chanserv set #"+CHname+" guard on", IRCsock);
+        irC.sendCmd("chanserv set #"+CHname+" mlock ", IRCsock); //cancel all the MLOCK
+        irC.sendCmd("part #"+CHname, IRCsock);
+         //this can keep the channel setting if no one in the channel
         response.redirect('/create');
 
     });
@@ -50,6 +53,8 @@ exports.NewCH = (app) => {
         var OP = request.body.OP;
         var key = request.body.key;
         var keyPW = request.body.keyPW;
+        var Public = request.body.Public;
+        var Private = request.body.Private;
         if(CHPW)
             irC.sendCmd("join #"+MCHname+" "+CHPW, IRCsock);
         else
@@ -61,7 +66,7 @@ exports.NewCH = (app) => {
             });
         }
         if (OP){
-            irC.sendCmd("chanserv op #"+MCHname+" "+nick, IRCsock);
+            irC.sendCmd("chanserv op #"+MCHname+" "+nick, IRCsock); //make yourself as OP
             sleep(2000).then(() => {
                 irC.sendCmd("mode #"+MCHname+" +o "+OP, IRCsock);
             });
@@ -70,8 +75,20 @@ exports.NewCH = (app) => {
             irC.sendCmd("chanserv set #"+MCHname+" founder "+FD, IRCsock);
         //irC.sendCmd("chanserv REGISTER #"+CHname+" "+PW+" "+DS, IRCsock);
         if (key="yes" && keyPW){
+            irC.sendCmd("chanserv op #"+MCHname+" "+nick, IRCsock);
+            //irC.sendCmd("mode #"+MCHname+" +k "+keyPW, IRCsock);
             irC.sendCmd("chanserv set #"+MCHname+" mlock +k "+keyPW, IRCsock);
         }
+        if (Private="yes"){
+            irC.sendCmd("chanserv op #"+MCHname+" "+nick, IRCsock);
+            irC.sendCmd("mode #"+MCHname+" +p", IRCsock);
+        }
+        if (Public="yes"){
+            irC.sendCmd("chanserv op #"+MCHname+" "+nick, IRCsock);
+            irC.sendCmd("mode #"+MCHname+" -p", IRCsock);
+        }
+
+        irC.sendCmd("part #"+MCHname, IRCsock);
         response.redirect('/create');
     });
 

@@ -24,20 +24,21 @@ function connect()
     console.log("connected");
     //"http://localhost:4343/chatDir/chat"
     if(!started)
-    {
-        socket = io.connect("http://localhost:4343");
+    {   
+        socket = io.connect("http://ircgoogle.sytes.net:5223");
         startChatting(socket);
+        chatlog.innerHTML +="\n";
 
     }
         socket.on('message', function(msg,sender) {
             console.log("INSIDE MESSAGE");
-            chatlog.innerHTML += "\n" +sender +" > "+ msg;
+            chatlog.innerHTML += sender +" > "+ msg+"\n";
             chatlog.scrollTop = chatlog.scrollHeight;
         });
 
         socket.on('conv', function(sender,msg) {
             console.log("INSIDE CONV");
-            chatlog.innerHTML += "\n" +sender +" > "+ msg;
+            chatlog.innerHTML += sender +" > "+ msg;
             chatlog.scrollTop = chatlog.scrollHeight;
         });
 
@@ -62,6 +63,10 @@ function connect()
             users.innerHTML = usersList;
         });
 }
+function dis ()
+{
+    socket.disconnect();
+}
 function post()
 {
 
@@ -70,4 +75,5 @@ function post()
     document.getElementById('message').value = "";
     socket.emit('message', message,nick_name);
 }
+
 

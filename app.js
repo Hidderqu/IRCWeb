@@ -5,7 +5,7 @@ let path = require('path');
 const fs = require('fs');
 const net = require('net');
 let server = require('http').createServer(app);
-let io = require('socket.io')(server);
+const io = require('socket.io')(server);
 
 let peers = [];
 
@@ -15,9 +15,9 @@ let session = require('express-session');
 //static path to our chat directory
 app.use(express.static(path.join(__dirname, 'pages/chatDir')));
 
-//Web server listening to client's messages on port 4343
-server.listen(4343, function(){
-    console.log("server listening to port 4343");
+//Web server listening to client's messages on port 5223
+server.listen(5223, function(){
+    console.log("server listening to port 5223");
 });
 //Handling server errors
 server.on('error', (error) => {
@@ -29,6 +29,7 @@ const irC = require("./customModules/IRCClient");
 const chList = require("./customModules/channel_list");
 const loginModule = require("./max/login.js");
 const NewCHModule = require("./customModules/NewCH");
+
 
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
@@ -127,14 +128,24 @@ app.get('/customModules/IRCClient.js', function (req, res) {
     })
 });
 
+var channel;
 
 app.get('/chat', function (req, res) {
-    let channel = req.query['channelName'];
+    var IRCSock = loginModule.sockArray[req.session.username];
+    //let channel;
+    if (channel){
+        irC.sendCmd("part #"+channel, IRCSock);
+        delete channel; 
+    }
+
+    channel = req.query['channelName'];
+    let PW = req.query['PW'];
     console.log(req.session.username + " opened the page");
-    let IRCSock = loginModule.sockArray[req.session.username];
+    //let IRCSock = loginModule.sockArray[req.session.username];
     //SocketIO Server Reconfig
     io.on('connection', function (socket)
     {
+        io.removeAllListeners();
         if(IRCSock) {
 
            // console.log("Total number of peers "+peers.length);
@@ -142,7 +153,10 @@ app.get('/chat', function (req, res) {
             socket.on('chat started', function () {
                // socket.emit('joinChannel', channel,req.session.username);
                 socket.emit('systemNotification','Connecting to '+channel+'...');
-                irC.sendCmd("JOIN #" + channel, IRCSock);
+                if (PW)
+                    irC.sendCmd("JOIN #" + channel + " " + PW, IRCSock);
+                else if (!PW)
+                    irC.sendCmd("JOIN #" + channel, IRCSock);
                 socket.emit('joinChannel', channel,req.session.username);
 
 
